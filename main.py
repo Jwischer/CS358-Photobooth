@@ -1,4 +1,4 @@
-from os import _exit #used for exiting script
+import os
 from time import sleep #used for delays for mouse inputs
 from pyautogui import size as screenSize #used to get monitor resolution
 from pynput.mouse import Controller, Button #used to control mouse input
@@ -13,12 +13,15 @@ def on_press(key):
             mouse.click(Button.left)
             sleep(0.2)
             mouse.scroll(0, 5)
+        if(key.char == 'r'):
+            os.startfile(os.path.join(mainFolder,"README.md")) #open readme
     except: #special keys go here
         if(key == Key.esc):
             print("esc")
-            _exit(0)
+            os._exit(0)
 
 #Setup
+mainFolder = os.path.dirname(__file__)
 screenWidth, screenHeight = screenSize() #get monitor resolution
 mouse = Controller()
 keyboard = Listener(on_press=on_press)
