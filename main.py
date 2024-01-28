@@ -5,6 +5,10 @@ from pynput.mouse import Controller, Button #used to control mouse input
 from pynput.keyboard import Listener, Key #used to control keyboard
 import cv2
 
+#Photo size in pixels
+PHOTO_WINDOW_SIZE_X = 600
+PHOTO_WINDOW_SIZE_Y = 400
+
 #Hotkey function
 def on_press(key):
     try: #standard alphanumeric keys go here
@@ -20,6 +24,10 @@ def on_press(key):
             cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
             noError,frame = cam.read()
             if(noError):
+                cv2.namedWindow("Photo", cv2.WINDOW_NORMAL)
+                x,y,windowWidth,Windowheight = cv2.getWindowImageRect("Photo")
+                cv2.resizeWindow("Photo",PHOTO_WINDOW_SIZE_X,PHOTO_WINDOW_SIZE_Y)
+                cv2.moveWindow("Photo",int((screenWidth-windowWidth)/2),int((screenHeight-Windowheight)/2))
                 cv2.imshow("Photo",frame)
                 cv2.waitKey(1)
                 cv2.imwrite("picture.png", frame)
