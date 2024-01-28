@@ -22,14 +22,14 @@ def on_press(key):
             if(noError):
                 cv2.imshow("Photo",frame)
                 cv2.waitKey(1)
+                cv2.imwrite("picture.png", frame)
+                cam.release()
             else:
                 print("Camera Error")
         if(key.char == 'q'): #Close picture window
             cv2.destroyWindow("Photo")
-            cam.release()
     except: #special keys go here
         if(key == Key.esc):
-            print("esc")
             os._exit(0)
 
 #Setup
