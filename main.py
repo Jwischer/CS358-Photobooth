@@ -17,6 +17,11 @@ def aPress(): #Move mouse
 def rPress(): #Open file
     subprocess.call(["xdg-open",os.path.join(mainFolder,"README.md")]) #open readme
     
+def pPress(): #Take photo
+    global takePhoto
+    if(playVideo): #Can only take photo while video is running
+        takePhoto = True
+
 def vPress(): #Take video
     global playVideo
     playVideo = True
@@ -36,12 +41,14 @@ screenWidth, screenHeight = pyautogui.size() #get monitor resolution
 keyboard.add_hotkey('a', lambda: aPress())
 keyboard.add_hotkey('r', lambda: rPress())
 keyboard.add_hotkey('v', lambda: vPress())
+keyboard.add_hotkey('p', lambda: pPress())
 keyboard.add_hotkey('q', lambda: qPress())
 keyboard.add_hotkey('esc', lambda: escPress())
 #Init flags
 takePic = False
 exitWindow = False
 playVideo = False
+takePhoto = False
 
 while True: #Infinite loop to check for flags
     if(playVideo):
@@ -55,11 +62,14 @@ while True: #Infinite loop to check for flags
         WIDTH = img.get_width()
         HEIGHT = img.get_height()
         screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.NOFRAME)
+        pygame.display.set_caption("pyGame Camera View")
         while(not exitWindow):
             img = webcam.get_image()
-            pygame.display.set_caption("pyGame Camera View")
             screen.blit(img, (0,0))
             pygame.display.flip()
+            if(takePhoto):
+                pygame.image.save(img, "image.png")
+                takePhoto = False
         webcam.stop()
         playVideo = False
         
