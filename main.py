@@ -1,79 +1,75 @@
-import os
-from time import sleep #used for delays for mouse inputs
-import pyautogui
-import keyboard
-import subprocess
-import pygame.camera
-import pygame.image
+from os import _exit
+from time import sleep #Delays
+from pyautogui import size as screenSize
+from signal import signal, SIGINT
+from pyautogui import size as screenSize
+import pygame
+import cv2
+import RPi.GPIO as GPIO
+import numpy as np
 
-#Start hotkey functions
-def aPress(): #Move mouse
-    pyautogui.move(50, 50, 1, pyautogui.easeInQuad)
-    sleep(0.2)
-    pyautogui.click()
-    sleep(0.2)
-    pyautogui.scroll(2)
-    
-def rPress(): #Open file
-    subprocess.call(["xdg-open",os.path.join(mainFolder,"README.md")]) #open readme
-    
-def pPress(): #Take photo
+#GPIO Pins
+BUTTON1 = 17
+BUTTON2 = 27
+LED = 22
+
+#Camera Settings
+#W, H = int(1920), int(1080)
+W, H = int(1920), int(1080)
+
+#GPIO Interrupt Functions
+def GPIO17Call(channel):
+    print("BUTTON1 Trig")
     global takePhoto
-    if(playVideo): #Can only take photo while video is running
-        takePhoto = True
+    takePhoto = True
 
-def vPress(): #Take video
-    global playVideo
-    playVideo = True
+def GPIO27Call(channel):
+    print("BUTTON2 Trig")
 
-def qPress(): #Close picture window
-    global exitWindow
-    exitWindow = True
-    
-def escPress(): #Exit script
-    os._exit(0)
-#End hotkey functions
+#Ctrl-C Handler
+def handler(num, frame):
+    capture.release()
+    pygame.quit()
+    GPIO.cleanup()
+    _exit(0)
 
+#Change ctrl-c to new function
+signal(SIGINT, handler)
 #Setup
-mainFolder = os.path.dirname(__file__)
-screenWidth, screenHeight = pyautogui.size() #get monitor resolution
-#Hotkey definitions
-keyboard.add_hotkey('a', lambda: aPress())
-keyboard.add_hotkey('r', lambda: rPress())
-keyboard.add_hotkey('v', lambda: vPress())
-keyboard.add_hotkey('p', lambda: pPress())
-keyboard.add_hotkey('q', lambda: qPress())
-keyboard.add_hotkey('esc', lambda: escPress())
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+screenWidth, screenHeight = screenSize() #get monitor resolution
+#GPIO definitions
+#Buttons are wired between 3.3v and
+GPIO.setup([BUTTON1,BUTTON2], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LED, GPIO.OUT)
+GPIO.output(LED, GPIO.LOW)
+#GPIO events
+GPIO.add_event_detect(BUTTON1, GPIO.RISING, callback=GPIO17Call, bouncetime=200)
+GPIO.add_event_detect(BUTTON2, GPIO.RISING, callback=GPIO27Call, bouncetime=200)
 #Init flags
 takePic = False
 exitWindow = False
 playVideo = False
 takePhoto = False
 
-while True: #Infinite loop to check for flags
-    if(playVideo):
-        #Initialize camera window
-        pygame.camera.init()
-        cameras = pygame.camera.list_cameras()
-        webcam = pygame.camera.Camera(cameras[0])
-        webcam.start()
-        #grab initial frame
-        img = webcam.get_image()
-        WIDTH = img.get_width()
-        HEIGHT = img.get_height()
-        screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.NOFRAME)
-        pygame.display.set_caption("pyGame Camera View")
-        while(not exitWindow):
-            img = webcam.get_image()
-            screen.blit(img, (0,0))
-            pygame.display.flip()
-            if(takePhoto):
-                pygame.image.save(img, "image.png")
-                takePhoto = False
-        webcam.stop()
-        playVideo = False
-        
-    if(exitWindow):
-        pygame.quit()
-        exitWindow = False
-        needInit = True
+#Start capture and set capture settings
+vidW, vidH = screenSize()
+capture = cv2.VideoCapture(0)
+capture.set(cv2.CAP_PROP_FRAME_WIDTH, vidW)
+capture.set(cv2.CAP_PROP_FRAME_HEIGHT, vidH)
+cv2.namedWindow("Video", cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty("Video",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+capture.set(cv2.CAP_PROP_FPS, 30)
+
+while True:
+    success, framecv = capture.read()
+    cv2.imshow("Video", framecv)
+    cv2.waitKey(1)
+    if(takePhoto):
+        cv2.imwrite("image.png", framecv)
+        takePhoto = False
+        GPIO.output(LED, GPIO.HIGH)
+        sleep(2)
+        GPIO.output(LED, GPIO.LOW)
