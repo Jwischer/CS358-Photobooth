@@ -69,7 +69,7 @@ class GmailController:
                 f = open(i, 'rb')
                 imageMIME = MIMEBase(main_type, sub_type)
                 imageMIME.set_payload(f.read())
-                imageMIME.add_header('Content-Disposition', 'attachment', filename=i.split("\\")[-1])
+                imageMIME.add_header('Content-Disposition', 'attachment', filename=i.split("/")[-1])
                 encoders.encode_base64(imageMIME)
                 f.close()
                 message.attach(imageMIME)
