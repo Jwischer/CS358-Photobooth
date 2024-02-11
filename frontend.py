@@ -1,4 +1,5 @@
 from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator
+from pyautogui import size as screenSize
 import sys
 
 #GPIO Pins
@@ -14,6 +15,7 @@ def GPIO17Call(channel):
 
 def GPIO27Call(channel):
     print("BUTTON2 Trig")
+    keyGen.makeNewKey()
 
 #NOTE: special exceptions in caller/watchdog script later
 #def handler(num, frame):
@@ -25,15 +27,16 @@ def GPIO27Call(channel):
 #Buttons are wired between 3.3v and target pin
 gpioControl = GPIOControl([BUTTON1, BUTTON2], LED)
 #GPIO events
-gpioControl.addEvent(BUTTON1, GPIO17Call)
-gpioControl.addEvent(BUTTON2, GPIO27Call)
+gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
+gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
 #Init flags
 takePhoto = False
 #Initialize video player
-videoPlayer = VideoPlayer()
+vidW, vidH = screenSize()
+videoPlayer = VideoPlayer("Video", 30, [vidW, vidH])
 #Inititalize key generator
 try:
-    keyGen = KeyGenerator(sys.argv[0])
+    keyGen = KeyGenerator(sys.argv[1])
 except:
     keyGen = KeyGenerator("AAAA")
 
@@ -42,6 +45,7 @@ while True:
     if(not success):
         continue
     if(takePhoto):
+        print(keyGen.key)
         videoPlayer.saveFrame(keyGen.key, "image.png")
         takePhoto = False
-        gpioControl.flashPin(LED, 1)
+        gpioControl.flashPin(gpioControl.led, 1)

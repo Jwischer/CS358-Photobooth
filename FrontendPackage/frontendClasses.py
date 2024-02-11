@@ -2,18 +2,20 @@ import time
 from pathlib import Path
 from pyautogui import size as screenSize
 import cv2
-import RPi.GPIO as GPIO
+from gpiozero import LED, Button
 import subprocess
 
 class VideoPlayer:
-    def __init__(self, playerName, fps):
+    def __init__(self, playerName, fps, resolution):
         self.playerName = playerName
         self.capture = cv2.VideoCapture(0)
-        self._path = Path("/Images")
+        self._path = Path("Images/")
+        subprocess.call("mkdir -m 777 Images", shell=True, stderr=subprocess.DEVNULL)
+        self.currFrame = None
         #Start capture and set capture settings
         vidW, vidH = screenSize()
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, vidW)
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, vidH)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         cv2.namedWindow(self.playerName, cv2.WND_PROP_FULLSCREEN)
         cv2.setWindowProperty(self.playerName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
         self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
@@ -23,41 +25,41 @@ class VideoPlayer:
         self.capture.release()
 
     def renderFrame(self):
-        success, framecv = self.capture.read()
-        cv2.imshow("Video", framecv)
+        success, self.currFrame = self.capture.read()
+        cv2.imshow("Video", self.currFrame)
         cv2.waitKey(1)
         return success
 
     def saveFrame(self, folderKey, imageName):
+        print(folderKey + " " + imageName)
         #Create folder if it does not exist
-        subprocess.call("mkdir Images\\" + folderKey, shell=True, stderr=subprocess.DEVNULL)
+        subprocess.call("sudo mkdir -m 777 Images/" + folderKey, shell=True, stderr=subprocess.DEVNULL)
         #Write image to folder
-        cv2.imwrite(self._path / folderKey / imageName, framecv)
+        cv2.imwrite(str(self._path / folderKey / imageName), self.currFrame)
 
 class GPIOControl:
     def __init__(self, inputs, outputs):
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(inputs, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(outputs, GPIO.OUT)
-        GPIO.output(LED, GPIO.LOW)
+        self.btn1 = Button(inputs[0], pull_up=False)
+        self.btn2 = Button(inputs[1], pull_up=False)
+        self.led = LED(outputs)
     
     def addEvent(self, targetInput, callbackFunction):
-        GPIO.add_event_detect(targetInput, GPIO.RISING, callback=callbackFunction, bouncetime=200)
+        targetInput.when_pressed = callbackFunction
 
     def flashPin(self, outputPin, length):
-        GPIO.output(outputPin, GPIO.high)
+        outputPin.on()
         time.sleep(length)
-        GPIO.output(outputPin, GPIO.low)
+        outputPin.off()
 
 class KeyGenerator:
     def __init__(self, initKey):
         self.key = initKey
+        print(self.key)
     
     def makeNewKey(self):
         keyList = list(self.key)
         #Generate new key
-        newKey = __findNextKey(keyList)
+        newKey = self.__findNextKey(keyList)
         #Turn list of chars into string
         self.key = newKey
         return newKey
