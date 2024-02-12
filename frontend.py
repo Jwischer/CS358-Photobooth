@@ -37,7 +37,7 @@ gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
 gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
 #Initialize video player
 vidW, vidH = screenSize()
-videoPlayer = VideoPlayer("Video", 30, [vidW, vidH])
+videoPlayer = VideoPlayer("Video", 20, [vidW, vidH])
 #Inititalize key generator
 try:
     keyGen = KeyGenerator(sys.argv[1])

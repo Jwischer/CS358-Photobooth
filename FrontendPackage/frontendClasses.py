@@ -12,19 +12,21 @@ from pyautogui import size as screenSize
 class VideoPlayer:
     def __init__(self, playerName, fps, resolution):
         self.playerName = playerName
+        self.resolution = resolution
         self.capture = cv2.VideoCapture(0)
         self._path = Path("Images/")
         self.success = False
         subprocess.call("mkdir -m 777 Images", shell=True, stderr=subprocess.DEVNULL)
         self.currFrame = None
         #Initialize frame grabbing thread
-        self.frameThread = threading.Thread(target=self.__updateFrame, args=())
+        self.frameThread = threading.Thread(target=self.__updateFrame, args=(), daemon=True)
         #Start capture and set capture settings
         vidW, vidH = screenSize()
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
-        self.capture.set(cv2.CAP_PROP_BUFFERSIZE, fps)
+        self.capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+        self.capture.set(cv2.CAP_PROP_POS_AVI_RATIO, 1)
         self.capture.set(cv2.CAP_PROP_FPS, fps)
         cv2.namedWindow(self.playerName, cv2.WND_PROP_FULLSCREEN)
         cv2.setWindowProperty(self.playerName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
@@ -37,10 +39,13 @@ class VideoPlayer:
     def __updateFrame(self):
         """Function for use in the frame grabber thread, continuously grabs new frames"""
         while True:
-            self.success, self.currFrame = self.capture.read()
+            if self.capture.isOpened():
+                self.success, self.currFrame = self.capture.read()
+            time.sleep(0.01)
 
     def renderFrame(self):
         try:
+            #vidFrame = cv2.resize(self.currFrame, (int(self.resolution[0]), int(self.resolution[1])))
             cv2.imshow("Video", self.currFrame)
             cv2.waitKey(1)
         except:
