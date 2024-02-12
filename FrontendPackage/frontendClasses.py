@@ -1,34 +1,51 @@
+#Standard libraries
 import time
+import subprocess
+import threading
+#Raspberry Pi libraries
+from gpiozero import LED, Button
+#Installed libraries
+import cv2
 from pathlib import Path
 from pyautogui import size as screenSize
-import cv2
-from gpiozero import LED, Button
-import subprocess
 
 class VideoPlayer:
     def __init__(self, playerName, fps, resolution):
         self.playerName = playerName
         self.capture = cv2.VideoCapture(0)
         self._path = Path("Images/")
+        self.success = False
         subprocess.call("mkdir -m 777 Images", shell=True, stderr=subprocess.DEVNULL)
         self.currFrame = None
+        #Initialize frame grabbing thread
+        self.frameThread = threading.Thread(target=self.__updateFrame, args=())
         #Start capture and set capture settings
         vidW, vidH = screenSize()
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
-        cv2.namedWindow(self.playerName, cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty(self.playerName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+        self.capture.set(cv2.CAP_PROP_BUFFERSIZE, fps)
         self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
         self.capture.set(cv2.CAP_PROP_FPS, fps)
+        cv2.namedWindow(self.playerName, cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty(self.playerName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+        #Start thread
+        self.frameThread.start()
     
     def stopPlayer(self):
         self.capture.release()
 
+    def __updateFrame(self):
+        """Function for use in the frame grabber thread, continuously grabs new frames"""
+        while True:
+            self.success, self.currFrame = self.capture.read()
+
     def renderFrame(self):
-        success, self.currFrame = self.capture.read()
-        cv2.imshow("Video", self.currFrame)
-        cv2.waitKey(1)
-        return success
+        try:
+            cv2.imshow("Video", self.currFrame)
+            cv2.waitKey(1)
+        except:
+            pass
+        return self.success
 
     def saveFrame(self, folderKey, imageName):
         print(folderKey + " " + imageName)

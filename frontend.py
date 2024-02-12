@@ -1,11 +1,17 @@
-from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator
-from pyautogui import size as screenSize
+#Standard packages
 import sys
+#Installed packages
+from pyautogui import size as screenSize
+#Local packages
+from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator
 
 #GPIO Pins
 BUTTON1 = 17
 BUTTON2 = 27
 LED = 22
+
+#Globals
+takePhoto = False
 
 #GPIO Interrupt Functions
 def GPIO17Call(channel):
@@ -29,8 +35,6 @@ gpioControl = GPIOControl([BUTTON1, BUTTON2], LED)
 #GPIO events
 gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
 gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
-#Init flags
-takePhoto = False
 #Initialize video player
 vidW, vidH = screenSize()
 videoPlayer = VideoPlayer("Video", 30, [vidW, vidH])
