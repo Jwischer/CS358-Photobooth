@@ -22,6 +22,7 @@ def GPIO17Call(channel):
 def GPIO27Call(channel):
     print("BUTTON2 Trig")
     keyGen.makeNewKey()
+    print(keyGen.key)
 
 #NOTE: special exceptions in caller/watchdog script later
 #def handler(num, frame):

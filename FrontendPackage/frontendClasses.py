@@ -2,12 +2,14 @@
 import time
 import subprocess
 import threading
+import math
 #Raspberry Pi libraries
 from gpiozero import LED, Button
 #Installed libraries
 import cv2
 from pathlib import Path
 from pyautogui import size as screenSize
+import numpy
 
 class VideoPlayer:
     def __init__(self, playerName, fps, resolution):
@@ -75,16 +77,27 @@ class GPIOControl:
 
 class KeyGenerator:
     def __init__(self, initKey):
+        #Set starting key
         self.key = initKey
-        print(self.key)
+        #Set starting key length
+        self.keyLen = 4
+        #Set ascii base
+        self.asciiBase = ord('A')
+        self.useableKeyLocs = numpy.array(list(range(0,26**self.keyLen)))
     
     def makeNewKey(self):
-        keyList = list(self.key)
-        #Generate new key
-        newKey = self.__findNextKey(keyList)
-        #Turn list of chars into string
-        self.key = newKey
-        return newKey
+        #Grab random useable key
+        arrLoc = numpy.random.choice(self.useableKeyLocs) #Location
+        self.key = self.__decToKey(arrLoc) #Key
+        #Remove used key from useable keys
+        self.useableKeyLocs = numpy.delete(self.useableKeyLocs, numpy.where(self.useableKeyLocs == arrLoc))
+        #Check if all keys are used
+        if(not numpy.any(self.useableKeyLocs)):
+            print("L")
+            #Increase key length
+            self.keyLen += 1
+            #Recreate key locations for new size
+            self.useableKeyLocs = numpy.array(list(range(0,26**self.keyLen)))
 
     def __findNextKey(self, keyList):
         """Private function, generates new key"""
@@ -96,8 +109,20 @@ class KeyGenerator:
                 if(charNum == len(keyList)):
                     #Make the key one more character, set all to A
                     keyList = (charNum+1)*"A"
+                    #Return lengthened key
+                    return ''.join(keyList)
                 continue
             #Increment character
             keyList[charNum] = chr(ord(char) + 1)
-            break
-        return ''.join(keyList)
+            return ''.join(keyList)
+    
+    def __decToKey(self, num):
+        """ """
+        charNum = 0
+        key = ""
+        for i in range(self.keyLen):
+            remKey = num % 26
+            num = math.floor(num/26)
+            key += chr(remKey+self.asciiBase)
+        return key
+    
