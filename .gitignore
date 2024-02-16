@@ -3,6 +3,9 @@
 *.png
 *.jpeg
 
+#Key generator file
+*.txt
+
 #Google api files
 credentials.json
 token.json
