@@ -8,6 +8,7 @@ For use with Raspberry Pi 5
 - [X] Flash light when picture is taken
 - [ ] Combine frontend and backend scripts (merge both into main)
 - [ ] Create a script to manage both frontend and backend scripts simultaniously
+- [ ] Create a script to install dependencies automatically
 - [ ] Create QR code to photobooth form
 - [ ] Display code to user after session
 - [ ] Display QR code to user after session
