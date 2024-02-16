@@ -76,45 +76,52 @@ class GPIOControl:
         outputPin.off()
 
 class KeyGenerator:
-    def __init__(self, initKey):
-        #Set starting key
-        self.key = initKey
+    def __init__(self, filename):
+        #Initialize key
+        self.key = None
+        #Set file name
+        self.filename = filename
         #Set starting key length
         self.keyLen = 4
         #Set ascii base
         self.asciiBase = ord('A')
-        self.useableKeyLocs = numpy.array(list(range(0,26**self.keyLen)))
+        #Create text file containing key codes
+        self.__createFile()
+        
+    def getNextKey(self):
+        keyCode, updatedList = self.__getKeyCode()
+        self.__updateFile(updatedList)
+        self.key = self.__decToKey(keyCode)
+        return self.key
     
-    def makeNewKey(self):
-        #Grab random useable key
-        arrLoc = numpy.random.choice(self.useableKeyLocs) #Location
-        self.key = self.__decToKey(arrLoc) #Key
-        #Remove used key from useable keys
-        self.useableKeyLocs = numpy.delete(self.useableKeyLocs, numpy.where(self.useableKeyLocs == arrLoc))
-        #Check if all keys are used
-        if(not numpy.any(self.useableKeyLocs)):
-            print("L")
-            #Increase key length
-            self.keyLen += 1
-            #Recreate key locations for new size
-            self.useableKeyLocs = numpy.array(list(range(0,26**self.keyLen)))
+    def __getKeyCode(self):
+        #Open file
+        keyFile = open(self.filename, "r")
+        #Check if any keys left
+        if(not keyFile.read(1)):
+            #Add length and generate file again
+            keyLen+=1
+            self.__createFile()
+        #Read keys into list
+        keylist = keyFile.read().split('\n')
+        keyFile.close()
+        #Remove any blank entries and convert to numpy array
+        keylist = numpy.array(list(filter(None, keylist)))
+        keyCode = numpy.random.choice(keylist)
+        updatedList = numpy.delete(keylist, numpy.where(keylist==keyCode))
+        return int(keyCode), updatedList
+            
+    def __updateFile(self, keyArr):
+        keyFile = open(self.filename, "w")
+        keyFile.write("")
+        keyFile.close()
+        keyFile = open(self.filename, "a")
+        for i in keyArr:
+            keyFile.write(str(i) + "\n")
 
-    def __findNextKey(self, keyList):
-        """Private function, generates new key"""
-        charNum = 0
-        for char in keyList:
-            if(char=='Z'):
-                charNum += 1
-                #if key is all Zs (out of keys for length)
-                if(charNum == len(keyList)):
-                    #Make the key one more character, set all to A
-                    keyList = (charNum+1)*"A"
-                    #Return lengthened key
-                    return ''.join(keyList)
-                continue
-            #Increment character
-            keyList[charNum] = chr(ord(char) + 1)
-            return ''.join(keyList)
+    def __createFile(self):
+        keyArr = list(range(0,26**self.keyLen))
+        self.__updateFile(keyArr)
     
     def __decToKey(self, num):
         """ """

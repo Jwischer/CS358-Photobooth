@@ -21,7 +21,7 @@ def GPIO17Call(channel):
 
 def GPIO27Call(channel):
     print("BUTTON2 Trig")
-    keyGen.makeNewKey()
+    keyGen.getNextKey()
     print(keyGen.key)
 
 #NOTE: special exceptions in caller/watchdog script later
@@ -43,7 +43,7 @@ videoPlayer = VideoPlayer("Video", 20, [vidW, vidH])
 try:
     keyGen = KeyGenerator(sys.argv[1])
 except:
-    keyGen = KeyGenerator("AAAA")
+    keyGen = KeyGenerator("keyList.txt")
 
 while True:
     success = videoPlayer.renderFrame()
