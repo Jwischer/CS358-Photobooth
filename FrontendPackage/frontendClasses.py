@@ -8,7 +8,6 @@ from gpiozero import LED, Button
 #Installed libraries
 import cv2
 from pathlib import Path
-from pyautogui import size as screenSize
 import numpy
 import qrcode
 from picamera2 import Picamera2, Preview
@@ -22,13 +21,20 @@ class VideoPlayer:
         self.vidWIDTH, self.vidHEIGHT = vidRes
         self.camWIDTH, self.camHEIGHT = camRes
         self.picam2 = Picamera2()
+        #Initialize qr code settings
+        self.qr = qrcode.QRCode(
+            version = None,
+            error_correction = qrcode.constants.ERROR_CORRECT_L,
+            box_size = 10,
+            border = 4,
+        )
         #Set camera config
         self.videoConfig = self.picam2.create_preview_configuration(main={"size": (self.vidWIDTH, self.vidHEIGHT)}, display="main", buffer_count = 3)
         #Set up image capture configuration
         self.photoConfig = self.picam2.create_still_configuration(main={"size": (self.camWIDTH, self.camHEIGHT)})
         subprocess.call("mkdir -m 777 Images", shell=True, stderr=subprocess.DEVNULL)
         #Start video and set video config
-        self.picam2.start_preview(Preview.QTGL, x=1, y=1, width=self.vidWIDTH, height=self.vidHEIGHT)
+        self.picam2.start_preview(Preview.DRM, x=1, y=1, width=self.vidWIDTH, height=self.vidHEIGHT)
         #auto-optimize irregular resolutions
         self.picam2.align_configuration(self.videoConfig)
         #Start picam in video mode
@@ -70,7 +76,7 @@ class VideoPlayer:
     def showContinueScreen(self):
         self.showOverlay("takeendoverlay")
         
-    def showQRScreen(self, key):
+    def showQRScreen(self, key, qrLink):
         font = cv2.FONT_HERSHEY_SIMPLEX
         text = "Key: " + key
         scale = 4
@@ -81,9 +87,25 @@ class VideoPlayer:
         #Add key text to overlay image
         textSize = cv2.getTextSize(text, font, scale, thickness)[0]
         coords = [int((1920-textSize[0])/2), int((1080-textSize[1])/2)+spacing]
-        #Note OpenCV uses BGR rather than RGB
+        #Note OpenCV uses BGRA rather than RGBA
         cv2.putText(overlay, text, coords, font, scale, (0,48,92,255), thickness+4, cv2.LINE_AA)
         cv2.putText(overlay, text, coords, font, scale, (10,184,245,255), thickness, cv2.LINE_AA)
+        #Set qr code data
+        self.qr.add_data(qrLink)
+        #Generate qr code (BGR color values)
+        qrCode = self.qr.make_image(fill_color = (0, 48, 92), back_color = (214 , 217, 218))
+        #Convert to numpy array using RGBA
+        qrCode = numpy.array(qrCode.convert("RGBA"))
+        #Bottom half of overlay can be used for qr code
+        qrDim = qrCode.shape
+        overlayDim = overlay.shape
+        #Calculate qr code start coordinates
+        startCoord = [overlayDim[0]/2 - qrDim[0]/2 + overlayDim[0]/4, overlayDim[1]/2 - qrDim[1]/2]
+        #Calculate qr code end coordinates
+        endCoord = [startCoord[0] + qrDim[0], startCoord[1] + qrDim[1]]
+        #Replace pixels with qr code
+        overlay[int(startCoord[0]):int(endCoord[0]), int(startCoord[1]):int(endCoord[1]), :] = qrCode
+        #Show overlay
         self.showOverlay(overlay)
         
     def showOverlay(self, overlay):

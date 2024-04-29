@@ -3,7 +3,6 @@ from os import _exit
 import signal
 import time
 #Installed packages
-from pyautogui import size as screenSize
 import gpiozero as GPIO
 #Local packages
 from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator
@@ -12,6 +11,10 @@ from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator
 BUTTON1 = 17
 BUTTON2 = 27
 LED = 22
+
+#QR Code Link
+#Should be the link to the google form
+QR_LINK = "https://forms.gle/KCeESYVUCj4moxPi7"
 
 #GPIO Interrupt Functions
 def GPIO17Call(channel):
@@ -74,7 +77,7 @@ gpioControl = GPIOControl([BUTTON1, BUTTON2], LED)
 gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
 gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
 #Initialize video player
-vidW, vidH = screenSize()
+#vidW, vidH = screenSize()
 #720p video; 1080p photos
 videoPlayer = VideoPlayer("Video", [1280,720], [1920, 1080])
 #Inititalize key generator
@@ -142,6 +145,6 @@ while True:
         #Clear any overlays
         videoPlayer.showOverlay(None)
         #Show qr code until button press
-        videoPlayer.showQRScreen(keyGen.key)
+        videoPlayer.showQRScreen(keyGen.key, QR_LINK)
         while(showQR):
             pass

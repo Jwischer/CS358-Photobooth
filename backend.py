@@ -10,7 +10,7 @@ EMAIL_TITLE = 'Photobooth Pictures'
 #Body of email
 EMAIL_BODY = 'This is an email from the photobooth.\nYour pictures are attached below!'
 #Url to google sheet linked with the form
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZvP0DCTNS9V6_j5W0KnYFsm9eFivFmjWdlUvMd-8pME/edit?resourcekey#gid=2108124015"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1YysUI-OJT6XPO9qqtwMygYJGwWc4ohH2NQ8aljmx9BI/edit?resourcekey#gid=1267535186"
 
 #NOTE: This is just for testing, remove later
 #Test receiver email
