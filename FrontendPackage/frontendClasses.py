@@ -16,12 +16,13 @@ from picamera2 import Picamera2, Preview
 from PIL import Image
 
 class VideoPlayer:
-    def __init__(self, playerName, vidRes, camRes):
+    def __init__(self, playerName, vidRes, camRes, vidSize):
         self.playerName = playerName
         self.capture = cv2.VideoCapture(0)
         self._path = Path("Images/")
         self.vidWIDTH, self.vidHEIGHT = vidRes
         self.camWIDTH, self.camHEIGHT = camRes
+        self.vidSizeWIDTH, self.vidSizeHEIGHT = vidSize
         self.picam2 = Picamera2()
         #Initialize qr code settings
         self.qr = qrcode.QRCode(
@@ -36,7 +37,7 @@ class VideoPlayer:
         self.photoConfig = self.picam2.create_still_configuration(main={"size": (self.camWIDTH, self.camHEIGHT)})
         subprocess.call("mkdir -m 777 Images", shell=True, stderr=subprocess.DEVNULL)
         #Start video and set video config
-        self.picam2.start_preview(Preview.DRM, x=1, y=1, width=self.vidWIDTH, height=self.vidHEIGHT)
+        self.picam2.start_preview(Preview.DRM, x=1, y=1, width=self.vidSizeWIDTH, height=self.vidSizeHEIGHT)
         #auto-optimize irregular resolutions
         self.picam2.align_configuration(self.videoConfig)
         #Start picam in video mode

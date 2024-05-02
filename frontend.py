@@ -14,8 +14,9 @@ BUTTON2 = 27
 LED = 22
 
 #Video/Camera settings
-vidResolution = [1280, 720]
-camResolution = [1920, 1080]
+vidSize = [1280, 720] #Resolution of viewport
+vidResolution = [1280, 720] #Resolution of video
+camResolution = [1920, 1080] #Resolution of pictures
 
 #Path to images folder
 imagePath = pathlib.Path("Images/")
@@ -84,7 +85,7 @@ gpioControl = GPIOControl([BUTTON1, BUTTON2], LED)
 gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
 gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
 #Initialize video player
-videoPlayer = VideoPlayer("Video", vidResolution, camResolution)
+videoPlayer = VideoPlayer("Video", vidResolution, camResolution, vidSize)
 #Inititalize key generator
 keyGen = KeyGenerator("keyList.txt")
 #Initialize storage manager
