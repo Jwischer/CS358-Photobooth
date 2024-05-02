@@ -132,6 +132,9 @@ while True:
 
     #When time to take photo
     if(takePhoto and showCamera):
+        #Disable GPIO
+        gpioControl.addEvent(gpioControl.btn1, None)
+        gpioControl.addEvent(gpioControl.btn2, None)
         #Clear any overlays
         videoPlayer.showOverlay(None)
         #Begin countdown
@@ -152,6 +155,9 @@ while True:
         else:
             #ask if user wants to continue
             videoPlayer.showContinueScreen()
+        #Enable GPIO
+        gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
+        gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
 
     #If end of session
     if(showQR):

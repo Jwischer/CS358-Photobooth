@@ -2,27 +2,7 @@ import os
 import pathlib
 import shutil
 import time
-
-class StorageManager():
-
-    def __init__(self, managerPath):
-        self.path = managerPath
-
-    def CheckStorage(self, maxItems):
-        #Get number of items
-        items = os.listdir(self.path)
-        #If more than maxItems folders
-        if(len(items) > maxItems):
-            #Construct full paths
-            fullPaths = []
-            for i in items:
-                fullPaths.append(self.path / i)
-            #Delete oldest item
-            oldItem = min(fullPaths, key = os.path.getctime)
-            print("Deleted: " + str(oldItem))
-            shutil.rmtree(oldItem)
-            return True
-        return False
+from ..FrontendPackage import StorageManager
 
 #Path must be an empty directory for test to work
 keyPath = pathlib.Path('testdir')
