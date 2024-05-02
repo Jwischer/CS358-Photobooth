@@ -1,7 +1,0 @@
-setup.py
-FrontendPackage.egg-info/PKG-INFO
-FrontendPackage.egg-info/SOURCES.txt
-FrontendPackage.egg-info/dependency_links.txt
-FrontendPackage.egg-info/not-zip-safe
-FrontendPackage.egg-info/requires.txt
-FrontendPackage.egg-info/top_level.txt

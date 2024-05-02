@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: FrontendPackage
-Version: 0.1
-Summary: Package that contains frontend functions for the Union Photobooth, runs only on raspberry pi 5
-Home-page: #
-Author: Jake Wischer
-Author-email: jake.wischer@valpo.edu
