@@ -1,48 +1,40 @@
 import math
 
 def decToKey(num):
-        charNum = 0
-        key = ""
-        for i in range(keyLen):
-            remKey = num % 26
-            num = math.floor(num/26)
-            key += chr(remKey + asciiBase)
-        return key
+    """Convert decimal number to a key"""
+    charNum = 0
+    key = ""
+    for i in range(keyLen):
+        remKey = num % base
+        num = math.floor(num/base)
+        key += keyLetters[remKey]
+    return key
 
 def keyToDec(key):
+    """Convert key to a decimal number"""
     #Turn key into char list
     keyList = list(key)
     keyValue = 0
     for i in range(len(keyList)):
-        #convert chars to ascii; shift so that A = 1, B = 2, etc
-        num = ord(keyList[i]) - asciiBase
+        #convert chars to numbers
+        num = keyLetters.index(keyList[i])
         #convert shifted ascii to base 26 counting
-        keyValue += num*(26**i)
+        keyValue += num*(base**i)
     return keyValue
 
-def incrementKey(key):
-    key = list(key)
-    for i in range(len(key)):
-        if(key[i] != 'Z'):
-            key[i] = chr(ord(key[i])+1)
-            break
-        else:
-            key[i] = 'A'
-            continue
-    return "".join(key)
-
-key = "AAAA"
+key = 0
 keyLen = 4
-asciiBase = ord('A')
+keyLetters = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Z']
+base = 20
 
-for i in range(26**4):
-    keyVal = keyToDec(key)
-    #print("Expected Key: " + key)
-    #print("Decimal: " + str(keyVal))
-    keyRet = decToKey(keyVal)
-    #print("Key: " + keyRet)
+for i in range(base**keyLen):
+    keyVal = decToKey(key)
+    print("Key: " + str(keyVal))
+    keyRet = keyToDec(keyVal)
+    print("Dec: " + str(keyRet))
+    print("Expected Dec: " + str(key))
     if(keyRet != key):
         print("Test Failed")
         break
-    key = incrementKey(key)
+    key += 1
 print("Test Success")

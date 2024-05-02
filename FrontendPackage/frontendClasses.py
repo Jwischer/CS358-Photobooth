@@ -150,13 +150,15 @@ class KeyGenerator:
         self.key = None
         #Set file name
         self.filename = filename
-        #Set starting key length
+        #Set key length
         self.keyLen = 4
-        #Set ascii base
-        self.asciiBase = ord('A')
         #Create text file containing key codes
         self.__createFile()
-        
+        #Array containing possible letters
+        #No vowels/y ensures that no profanity will be generated for the key
+        self.keyLetters = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Z']
+        self.base = len(keyLetters)
+
     def getNextKey(self):
         keyCode, updatedList = self.__getKeyCode()
         self.__updateFile(updatedList)
@@ -203,28 +205,30 @@ class KeyGenerator:
         if(Path(self.filename).is_file()):
             print("Keyfile exists")
         else:
-            keyArr = list(range(0,26**self.keyLen))
+            keyArr = list(range(0,self.base**self.keyLen))
             self.__updateFile(keyArr)
             print("Creating new keyfile")
     
     def __decToKey(self, num):
+        """Convert decimal number to a key"""
         charNum = 0
         key = ""
         for i in range(self.keyLen):
-            remKey = num % 26
-            num = math.floor(num/26)
-            key += chr(remKey + self.asciiBase)
+            remKey = num % self.base
+            num = math.floor(num/self.base)
+            key += self.keyLetters[remKey]
         return key
 
     def __keyToDec(self, key):
+        """Convert key to a decimal number"""
         #Turn key into char list
         keyList = list(key)
         keyValue = 0
         for i in range(len(keyList)):
-            #convert chars to ascii; shift so that A = 1, B = 2, etc
-            num = ord(keyList[i]) - self.asciiBase
+            #convert chars to numbers
+            num = self.keyLetters.index(keyList[i])
             #convert shifted ascii to base 26 counting
-            keyValue += num*(26**i)
+            keyValue += num*(self.base**i)
         return keyValue
             
         
@@ -262,31 +266,3 @@ class StorageManager():
             shutil.rmtree(oldItem)
             return True, str(oldItem).split("/")[-1]
         return False, None
-
-def putTextCenter(image, text, font, scale, color, thickness, linetype=cv2.LINE_AA):
-    """Places text in the middle of the image"""
-    textSize = cv2.getTextSize(text, font, scale, thickness)
-    posX = int((image.shape[1] - textSize[0][0]) / 2)
-    posY = int((image.shape[0] + (textSize[0][1] - textSize[1])) / 2)
-    cv2.putText(image, text, (posX, posY), font, scale, color, thickness, cv2.LINE_AA)
-
-def putTextBottom(image, text, font, scale, color, thickness, linetype=cv2.LINE_AA):
-    """Places text in the bottom of the image"""
-    textSize = cv2.getTextSize(text, font, scale, thickness)
-    posX = int((image.shape[1] - textSize[0][0]) / 2)
-    posY = int((image.shape[0]) - (textSize[0][1] - textSize[1]) / 2)
-    cv2.putText(image, text, (posX, posY), font, scale, color, thickness, cv2.LINE_AA)
-
-def putTextBottomLeft(image, text, font, scale, color, thickness, linetype=cv2.LINE_AA):
-    """Places text in the bottom left of the image"""
-    textSize = cv2.getTextSize(text, font, scale, thickness)
-    posX = int((image.shape[1] / 2 - textSize[0][0]) / 2)
-    posY = int((image.shape[0]) - (textSize[0][1] - textSize[1]) / 2)
-    cv2.putText(image, text, (posX, posY), font, scale, color, thickness, cv2.LINE_AA)
-
-def putTextBottomRight(image, text, font, scale, color, thickness, linetype=cv2.LINE_AA):
-    """Places text in the bottom right of the image"""
-    textSize = cv2.getTextSize(text, font, scale, thickness)
-    posX = int(image.shape[1] - textSize[0][0] - (image.shape[1] / 2 - textSize[0][0]) / 2)
-    posY = int((image.shape[0]) - (textSize[0][1] - textSize[1]) / 2)
-    cv2.putText(image, text, (posX, posY), font, scale, color, thickness, cv2.LINE_AA)
