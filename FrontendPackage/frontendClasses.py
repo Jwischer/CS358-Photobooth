@@ -3,11 +3,13 @@ import time
 import subprocess
 import threading
 import math
+import shutil
+from pathlib import Path
+import os
 #Raspberry Pi libraries
 from gpiozero import LED, Button
 #Installed libraries
 import cv2
-from pathlib import Path
 import numpy
 import qrcode
 from picamera2 import Picamera2, Preview
@@ -55,7 +57,7 @@ class VideoPlayer:
         self.picam2.switch_mode(self.videoConfig)
         
     def startCountdown(self):
-        """Countdown from 3 to 0 inclusive, number printed in center of window"""
+        """Countdown from 3 to 1 inclusive, number printed in center of window"""
         #Display 3 overlay
         self.showOverlay("3overlay")
         #Wait for 1 second
@@ -65,8 +67,8 @@ class VideoPlayer:
         time.sleep(1)
         self.showOverlay("1overlay")
         time.sleep(1)
-        self.showOverlay("0overlay")
-        time.sleep(1)
+        #self.showOverlay("0overlay")
+        #time.sleep(1)
         #Clear overlay
         self.showOverlay(None)
     
@@ -159,6 +161,13 @@ class KeyGenerator:
         self.__updateFile(updatedList)
         self.key = self.__decToKey(keyCode)
         return self.key
+        
+    def addKey(self, key):
+        #Open file in append mode
+        keyFile = open(self.filename, "a")
+        #Append decimal representation of key to file
+        keyFile.write(str(self.__keyToDec(str(key))) + "\n")
+        keyFile.close()
     
     def __getKeyCode(self):
         #Open file
@@ -175,12 +184,15 @@ class KeyGenerator:
         keylist = numpy.array(list(filter(None, keylist)))
         keyCode = numpy.random.choice(keylist)
         updatedList = numpy.delete(keylist, numpy.where(keylist==keyCode))
+        print(keyCode)
         return int(keyCode), updatedList
             
     def __updateFile(self, keyArr):
+        #Clear keyFile
         keyFile = open(self.filename, "w")
         keyFile.write("")
         keyFile.close()
+        #Write keys to keyFile
         keyFile = open(self.filename, "a")
         for i in keyArr:
             keyFile.write(str(i) + "\n")
@@ -195,15 +207,61 @@ class KeyGenerator:
             print("Creating new keyfile")
     
     def __decToKey(self, num):
-        """ """
         charNum = 0
         key = ""
         for i in range(self.keyLen):
             remKey = num % 26
             num = math.floor(num/26)
-            key += chr(remKey+self.asciiBase)
+            key += chr(remKey + self.asciiBase)
         return key
+
+    def __keyToDec(self, key):
+        #Turn key into char list
+        keyList = list(key)
+        keyValue = 0
+        for i in range(len(keyList)):
+            #convert chars to ascii; shift so that A = 1, B = 2, etc
+            num = ord(keyList[i]) - self.asciiBase
+            #convert shifted ascii to base 26 counting
+            keyValue += num*(26**i)
+        return keyValue
+            
         
+class StorageManager():
+
+    def __init__(self, managerPath):
+        self.path = managerPath
+        
+    def CheckStorageNoPrint(self, maxItems):
+        #Get number of items
+        items = os.listdir(self.path)
+        #If more than maxItems folders
+        if(len(items) > maxItems):
+            #Construct full paths
+            fullPaths = []
+            for i in items:
+                fullPaths.append(self.path / i)
+            #Delete oldest item
+            oldItem = min(fullPaths, key = os.path.getctime)
+            shutil.rmtree(oldItem)
+            return True
+        return False
+        
+    def CheckStorage(self, maxItems):
+        #Get number of items
+        items = os.listdir(self.path)
+        #If more than maxItems folders
+        if(len(items) > maxItems):
+            #Construct full paths
+            fullPaths = []
+            for i in items:
+                fullPaths.append(self.path / i)
+            #Delete oldest item
+            oldItem = min(fullPaths, key = os.path.getctime)
+            shutil.rmtree(oldItem)
+            return True, str(oldItem).split("/")[-1]
+        return False, None
+
 def putTextCenter(image, text, font, scale, color, thickness, linetype=cv2.LINE_AA):
     """Places text in the middle of the image"""
     textSize = cv2.getTextSize(text, font, scale, thickness)

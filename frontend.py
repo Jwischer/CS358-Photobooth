@@ -2,15 +2,23 @@
 from os import _exit
 import signal
 import time
+import pathlib
 #Installed packages
 import gpiozero as GPIO
 #Local packages
-from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator
+from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator, StorageManager
 
 #GPIO Pins
 BUTTON1 = 17
 BUTTON2 = 27
 LED = 22
+
+#Video/Camera settings
+vidResolution = [1280, 720]
+camResolution = [1920, 1080]
+
+#Path to images folder
+imagePath = pathlib.Path("Images/")
 
 #QR Code Link
 #Should be the link to the google form
@@ -28,7 +36,7 @@ def GPIO17Call(channel):
     if(newSession):
         #Advance to camera
         newSession = False
-        showCamera = True     
+        showCamera = True
     #If in camera
     elif(showCamera):
         #Take a photo
@@ -39,7 +47,6 @@ def GPIO17Call(channel):
         showQR = False
         newSession = True
 
-#STILL NEED TO TEST THIS BUTTON!!!
 def GPIO27Call(channel):
     global newSession
     global contScreen
@@ -77,11 +84,11 @@ gpioControl = GPIOControl([BUTTON1, BUTTON2], LED)
 gpioControl.addEvent(gpioControl.btn1, GPIO17Call)
 gpioControl.addEvent(gpioControl.btn2, GPIO27Call)
 #Initialize video player
-#vidW, vidH = screenSize()
-#720p video; 1080p photos
-videoPlayer = VideoPlayer("Video", [1280,720], [1920, 1080])
+videoPlayer = VideoPlayer("Video", vidResolution, camResolution)
 #Inititalize key generator
 keyGen = KeyGenerator("keyList.txt")
+#Initialize storage manager
+fileManager = StorageManager(imagePath)
 
 #Flags
 #States: start screen -> camera -> pictures -> qr screen -> reset
@@ -94,6 +101,12 @@ initInstruct = True
 while True:
     if(newSession):
         #Initialize
+        #If too many files; delete oldest
+        status, fileKey = fileManager.CheckStorage(200)
+        #If a file was deleted add its key back into keyGen
+        if(status):
+	     #Need to convert key to int
+             keyGen.addKey(fileKey)
         #Generate new key
         keyGen.getNextKey()
         numPhotos = 0
@@ -107,7 +120,7 @@ while True:
         videoPlayer.showStartMenu()
         while(newSession):
             pass
-        
+
     #On first time entering photo mode
     if(showCamera and initInstruct):
         #Clear any overlays
@@ -115,7 +128,7 @@ while True:
         #Instruct the user on what each button does
         videoPlayer.showContinueScreen()
         initInstruct = False
-        
+
     #When time to take photo
     if(takePhoto and showCamera):
         #Clear any overlays
@@ -138,8 +151,7 @@ while True:
         else:
             #ask if user wants to continue
             videoPlayer.showContinueScreen()
-                
-                
+
     #If end of session
     if(showQR):
         #Clear any overlays
