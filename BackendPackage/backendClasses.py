@@ -137,5 +137,5 @@ class DataRetriever:
             entry = self.currentData.iloc[-(i+1)]
             entry = entry.values.tolist()
             email.append(entry[1])
-            folderId.append(entry[2])
+            folderId.append(entry[2].upper())
         return email, folderId
