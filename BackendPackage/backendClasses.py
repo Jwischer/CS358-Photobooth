@@ -1,3 +1,5 @@
+#backendClasses.py  Copyright (C) 2024  Valparaiso University
+
 import base64 #standard lib
 import mimetypes #standard lib
 import os #standard lib

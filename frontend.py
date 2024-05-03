@@ -1,3 +1,5 @@
+#frontend.py  Copyright (C) 2024  Valparaiso University
+
 #Standard packages
 from os import _exit
 import signal

@@ -1,3 +1,5 @@
+#frontendClasses.py  Copyright (C) 2024  Valparaiso University
+
 #Standard libraries
 import time
 import subprocess

@@ -1,3 +1,5 @@
+#setup.py  Copyright (C) 2024  Valparaiso University
+
 import setuptools
 
 setuptools.setup(name='BackendPackage',

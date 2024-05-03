@@ -1,3 +1,5 @@
+#FileDelete.py  Copyright (C) 2024  Valparaiso University
+
 import os
 import pathlib
 import shutil

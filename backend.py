@@ -1,3 +1,5 @@
+#backend.py  Copyright (C) 2024  Valparaiso University
+
 import time
 from BackendPackage import GmailController, DataRetriever
 

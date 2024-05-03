@@ -1,3 +1,5 @@
+#ConversionTest.py  Copyright (C) 2024  Valparaiso University
+
 import math
 
 def decToKey(num):
