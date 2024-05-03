@@ -142,7 +142,7 @@ while True:
         #Begin countdown
         videoPlayer.startCountdown()
         #Take photo
-        videoPlayer.saveFrame(keyGen.key, "".join(photoNameList) + ".png")
+        videoPlayer.saveFrame(keyGen.key, "".join(photoNameList) + ".jpg")
         #Clear flag and flash light
         takePhoto = False
         gpioControl.flashPin(gpioControl.led, 1)
