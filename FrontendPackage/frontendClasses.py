@@ -150,7 +150,7 @@ class KeyGenerator:
     def __init__(self, filename):
         #No vowels/y ensures that no profanity will be generated for the key
         self.keyLetters = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Z']
-        self.base = len(keyLetters)
+        self.base = len(self.keyLetters)
         #Initialize key
         self.key = None
         #Set file name
