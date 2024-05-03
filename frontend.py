@@ -103,10 +103,10 @@ while True:
     if(newSession):
         #Initialize
         #If too many files; delete oldest
-        status, fileKey = fileManager.CheckStorage(200)
+        status, fileKey = fileManager.CheckStorage(500)
         #If a file was deleted add its key back into keyGen
         if(status):
-	     #Need to convert key to int
+             #Add key back to useable keys
              keyGen.addKey(fileKey)
         #Generate new key
         keyGen.getNextKey()

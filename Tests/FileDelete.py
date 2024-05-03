@@ -2,7 +2,7 @@ import os
 import pathlib
 import shutil
 import time
-from ..FrontendPackage import StorageManager
+from FrontendPackage import StorageManager
 
 #Path must be an empty directory for test to work
 keyPath = pathlib.Path('testdir')
@@ -23,10 +23,11 @@ for i in range(1, numDir+1):
 
 testVar = 0
 for i in range(1, numDir+1):
-    testResult = fileManager.CheckStorage(maxDir)
+    testResult, folderName = fileManager.CheckStorage(maxDir)
     if(testResult == True):
         testVar += 1
     else:
+        print(numDir - testVar)
         if(numDir - testVar == maxDir):
             print("Test Success: " + str(numDir - testVar) + " directories remain; expecting " + str(maxDir))
             break
