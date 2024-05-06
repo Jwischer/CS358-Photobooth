@@ -129,8 +129,8 @@ class VideoPlayer:
 
 class GPIOControl:
     def __init__(self, inputs, outputs):
-        self.btn1 = Button(inputs[0], pull_up=False, debounce_time = 0.05)
-        self.btn2 = Button(inputs[1], pull_up=False, debounce_time = 0.05)
+        self.btn1 = Button(inputs[0], pull_up=False, bounce_time = 0.05)
+        self.btn2 = Button(inputs[1], pull_up=False, bounce_time = 0.05)
         self.led = LED(outputs)
     
     def addEvent(self, targetInput, callbackFunction):
@@ -180,7 +180,7 @@ class KeyGenerator:
         #Check if any keys left
         if(not keyFile.read(1)):
             #Add length and generate file again
-            keyLen+=1
+            self.keyLen+=1
             self.__createFile()
         #Read keys into list
         keylist = keyFile.read().split('\n')

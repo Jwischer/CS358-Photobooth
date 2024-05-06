@@ -27,6 +27,9 @@ imagePath = pathlib.Path("Images/")
 #Should be the link to the google form
 QR_LINK = "https://forms.gle/KCeESYVUCj4moxPi7"
 
+#QR screen timeout in ms
+qrTimeout = 60000
+
 #GPIO Interrupt Functions
 def GPIO17Call(channel):
     global newSession
@@ -117,8 +120,6 @@ while True:
         photoNameList = list("photo1")
         #Set init instruct so user gets instructions
         initInstruct = True
-        #Clear any overlays
-        videoPlayer.showOverlay(None)
         #Show start screen
         videoPlayer.showStartMenu()
         while(newSession):
@@ -126,8 +127,6 @@ while True:
 
     #On first time entering photo mode
     if(showCamera and initInstruct):
-        #Clear any overlays
-        videoPlayer.showOverlay(None)
         #Instruct the user on what each button does
         videoPlayer.showContinueScreen()
         initInstruct = False
@@ -137,8 +136,6 @@ while True:
         #Disable GPIO
         gpioControl.addEvent(gpioControl.btn1, None)
         gpioControl.addEvent(gpioControl.btn2, None)
-        #Clear any overlays
-        videoPlayer.showOverlay(None)
         #Begin countdown
         videoPlayer.startCountdown()
         #Take photo
@@ -163,9 +160,12 @@ while True:
 
     #If end of session
     if(showQR):
-        #Clear any overlays
-        videoPlayer.showOverlay(None)
         #Show qr code until button press
         videoPlayer.showQRScreen(keyGen.key, QR_LINK)
-        while(showQR):
-            pass
+        #Wait for qrTimeout ms or until button pressed
+        for i in range(qrTimeout):
+            time.sleep(0.001)
+            if(not showQR):
+                break
+        showQR = False
+        newSession = True

@@ -1,6 +1,6 @@
 #backendClasses.py  Copyright (C) 2024  Valparaiso University
 
-import base64 #standard lib
+import smtplib, ssl
 import mimetypes #standard lib
 import os #standard lib
 import re #standard lib
@@ -10,37 +10,15 @@ from email.mime.text import MIMEText #standard lib
 from email.mime.multipart import MIMEMultipart #standard lib
 import pandas as pd #pandas
 from pathlib import Path #pathlib
-from google.auth.transport.requests import Request #google-api-python-client
-from google_auth_oauthlib.flow import InstalledAppFlow #google-api-python-client
-from google.oauth2.credentials import Credentials #google-api-python-client
-from googleapiclient import discovery #google-api-python-client
-from oauth2client import file #oauth2client
 
-class GmailController:
+class MailController:
     """Functions:
         sendMessage(title, body, destEmail, folderKey, bodyFormat='plain')
     """
-    def __init__(self, scopes):
-        """Sets up token for google api, generates one if needed"""
-        self.store = file.Storage("token.json")
-        self.creds = None
-        #If possible credentials found
-        if os.path.exists("token.json"):
-            self.creds = Credentials.from_authorized_user_file("token.json", scopes)
-        # If there are no (valid) credentials available, let the user log in.
-        if not self.creds or not self.creds.valid:
-            if self.creds and self.creds.expired and self.creds.refresh_token:
-                self.creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", scopes
-                )
-                self.creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open("token.json", "w") as token:
-                token.write(self.creds.to_json())
-        #Start gmail api service
-        self.service = discovery.build("gmail", "v1", credentials=self.creds)
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
+        pass
 
     def sendMessage(self, title, body, destEmail, folderKey, bodyFormat='plain'):
         """Sends a email using gmail to destEmal, containing files in folder Images/folderKey
@@ -55,34 +33,49 @@ class GmailController:
         """
         try:
             #Grab image names in accessed image folder
-            imagePath = Path('Images/') / folderKey
+            imagePath = Path('Images') / folderKey
             images = imagePath.glob('*.*')
             images = [str(i) for i in images]
             images = list(images)
-            # create email message
+            print(images)
+
+            # Create a multipart message and set headers
             message = MIMEMultipart()
-            message['to'] = destEmail
-            message['subject'] = title
-            message.attach(MIMEText(body, bodyFormat))
+            message["From"] = self.email
+            message["To"] = destEmail
+            message["Subject"] = title
+            # Add body to email
+            message.attach(MIMEText(body, "plain"))
+
             # Attach files
             for i in images:
-                content_type, encoding = mimetypes.guess_type(i)
-                main_type, sub_type = content_type.split('/', 1)
-                f = open(i, 'rb')
-                imageMIME = MIMEBase(main_type, sub_type)
-                imageMIME.set_payload(f.read())
-                imageMIME.add_header('Content-Disposition', 'attachment', filename=i.split("/")[-1])
-                encoders.encode_base64(imageMIME)
-                f.close()
-                message.attach(imageMIME)
-            #Encode data
-            encoded_string = base64.urlsafe_b64encode(message.__bytes__()).decode()
+                # Open file in binary mode
+                with open(i, "rb") as attachment:
+                    # Add file as application/octet-stream
+                    # Email client can usually download this automatically as attachment
+                    part = MIMEBase("application", "octet-stream")
+                    part.set_payload(attachment.read())
+
+                # Encode file in ASCII characters to send by email    
+                encoders.encode_base64(part)
+
+                # Add header as key/value pair to attachment part
+                part.add_header(
+                    "Content-Disposition",
+                    f"attachment; filename= {i.split('/')[-1]}",
+                )
+
+                # Add attachment to message and convert message to string
+                message.attach(part)
+            #Convert message to a string
+            text = message.as_string()
+
             try:
                 #Send email
-                message = (self.service.users()
-                    .messages()
-                    .send(userId='me',body={'raw': encoded_string})
-                    .execute())
+                context=ssl.create_default_context()
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+                    server.login(self.email, self.password)
+                    server.sendmail(self.email, destEmail, text)
                 return True
             except:
                 print("ERROR SENDING EMAIL")

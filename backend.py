@@ -1,12 +1,12 @@
 #backend.py  Copyright (C) 2024  Valparaiso University
 
 import time
-from BackendPackage import GmailController, DataRetriever
+from BackendPackage import MailController, DataRetriever
 
-# If modifying these scopes, delete the file token.json.
-# mail.google.com is used to access gmail services
-# googleapis.com/auth/drive is used for forms services, unneeded in this file but used elsewhere
-SCOPES = ["https://mail.google.com/","https://www.googleapis.com/auth/drive"]
+#Sender Email Address
+EMAIL_ADDRESS = "photoboothreceiver@gmail.com"
+#Sender Address Password
+EMAIL_PASSWORD = ""
 #Title of email
 EMAIL_TITLE = 'Photobooth Pictures'
 #Body of email
@@ -14,12 +14,8 @@ EMAIL_BODY = 'This is an email from the photobooth.\nYour pictures are attached 
 #Url to google sheet linked with the form
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1YysUI-OJT6XPO9qqtwMygYJGwWc4ohH2NQ8aljmx9BI/edit?resourcekey#gid=1267535186"
 
-#NOTE: This is just for testing, remove later
-#Test receiver email
-TEST_EMAIL = "photoboothreceiver@gmail.com"
-
 #Define a GmailController
-mailController = GmailController(SCOPES)
+mailController = MailController(EMAIL_ADDRESS, EMAIL_PASSWORD)
 
 #Define a DataReceiver
 dataController = DataRetriever(SHEET_URL)
