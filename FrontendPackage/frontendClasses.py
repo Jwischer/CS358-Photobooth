@@ -178,18 +178,22 @@ class KeyGenerator:
         #Open file
         keyFile = open(self.filename, "r")
         #Check if any keys left
-        if(not keyFile.read(1)):
+        firstKey = keyFile.read(1)
+        if(not firstKey):
             #Add length and generate file again
             self.keyLen+=1
-            self.__createFile()
+            self.__createFile(True)
+            #Set firstKey as the new first key
+            firstKey = keyFile.read(1)
         #Read keys into list
         keylist = keyFile.read().split('\n')
         keyFile.close()
         #Remove any blank entries and convert to numpy array
         keylist = numpy.array(list(filter(None, keylist)))
+        #Add firstKey to the start of keylist
+        keylist = numpy.insert(keylist, 0, firstKey) 
         keyCode = numpy.random.choice(keylist)
         updatedList = numpy.delete(keylist, numpy.where(keylist==keyCode))
-        print(keyCode)
         return int(keyCode), updatedList
             
     def __updateFile(self, keyArr):
@@ -202,10 +206,11 @@ class KeyGenerator:
         for i in keyArr:
             keyFile.write(str(i) + "\n")
 
-    def __createFile(self):
+    def __createFile(self, empty = False):
         """If key file does not exist, create it"""
-        if(Path(self.filename).is_file()):
+        if(Path(self.filename).is_file() and not empty):
             print("Keyfile exists")
+        #If key file does not exist or is empty
         else:
             keyArr = list(range(0,self.base**self.keyLen))
             self.__updateFile(keyArr)
@@ -239,21 +244,6 @@ class StorageManager():
     def __init__(self, managerPath):
         self.path = managerPath
         
-    def CheckStorageNoPrint(self, maxItems):
-        #Get number of items
-        items = os.listdir(self.path)
-        #If more than maxItems folders
-        if(len(items) > maxItems):
-            #Construct full paths
-            fullPaths = []
-            for i in items:
-                fullPaths.append(self.path / i)
-            #Delete oldest item
-            oldItem = min(fullPaths, key = os.path.getctime)
-            shutil.rmtree(oldItem)
-            return True
-        return False
-        
     def CheckStorage(self, maxItems):
         #Get number of items
         items = os.listdir(self.path)
@@ -266,5 +256,5 @@ class StorageManager():
             #Delete oldest item
             oldItem = min(fullPaths, key = os.path.getctime)
             shutil.rmtree(oldItem)
-            return True, str(oldItem).split("/")[-1]
+            return True, str(oldItem).split(os.sep)[-1]
         return False, None
