@@ -5,30 +5,49 @@ from os import _exit
 import signal
 import time
 import pathlib
+import configparser
 #Installed packages
 import gpiozero as GPIO
 #Local packages
 from FrontendPackage import VideoPlayer, GPIOControl, KeyGenerator, StorageManager
+
+#Parse config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 #GPIO Pins
 BUTTON1 = 17
 BUTTON2 = 27
 LED = 22
 
-#Video/Camera settings
-vidSize = [1280, 720] #Resolution of viewport
-vidResolution = [1280, 720] #Resolution of video
-camResolution = [1920, 1080] #Resolution of pictures
+#Parse picamera configs into arrays
+#Resolution of viewport
+vidSize = config['PICAMERA']['VideoViewportSize'].split(',')
+for i in range(len(vidSize)):
+    vidSize[i] = vidSize[i].strip()
+    #Convert string to int
+    vidSize[i] = int(vidSize[i])
+
+#Resolution of video
+vidResolution = config['PICAMERA']['VideoResolution'].split(',')
+for i in range(len(vidResolution)):
+    vidResolution[i] = vidResolution[i].strip()
+    vidResolution[i] = int(vidResolution[i])
+
+#Resolution of pictures
+camResolution = config['PICAMERA']['VideoResolution'].split(',')
+for i in range(len(camResolution)):
+    camResolution[i] = camResolution[i].strip()
+    camResolution[i] = int(camResolution[i])
 
 #Path to images folder
 imagePath = pathlib.Path("Images/")
 
 #QR Code Link
 #Should be the link to the google form
-QR_LINK = "https://forms.gle/KCeESYVUCj4moxPi7"
-
+QR_LINK = config['URLS']['FormUrl']
 #QR screen timeout in ms
-qrTimeout = 60000
+qrTimeout = int(config['TIMEOUT']['QrTimeout'])
 
 #GPIO Interrupt Functions
 def GPIO17Call(channel):

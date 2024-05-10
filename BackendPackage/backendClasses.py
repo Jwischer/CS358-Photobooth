@@ -31,60 +31,62 @@ class MailController:
             bodyFormat: text format the body is in, plain by default
             Returns: bool (True if successfully sent, False if not)
         """
+       # try:
+        #Grab image names in accessed image folder
         try:
-            #Grab image names in accessed image folder
-            try:
-                imagePath = sorted((Path('Images') / folderKey).iterdir(), key = os.path.getmtime)
-            except:
-                print("Invalid key: " + str(folderKey))
-            images = [str(i) for i in imagePath]
-            images = list(images)
-            print(images)
-            
-            # Create a multipart message and set headers
-            message = MIMEMultipart()
-            message["From"] = self.email
-            message["To"] = destEmail
-            message["Subject"] = title
-            
-            # Add body to email
-            message.attach(MIMEText(body, "plain"))
-            # Attach files
-            for i in images:
-                # Open file in binary mode
-                with open(i, "rb") as attachment:
-                    # Add file as application/octet-stream
-                    # Email client can usually download this automatically as attachment
-                    part = MIMEBase("application", "octet-stream")
-                    part.set_payload(attachment.read())
-    
-                # Encode file in ASCII characters to send by email    
-                encoders.encode_base64(part)
-    
-                # Add header as key/value pair to attachment part
-                part.add_header(
-                    "Content-Disposition",
-                    f"attachment; filename= {i.split('/')[-1]}",
-                )
-    
-                # Add attachment to message and convert message to string
-                message.attach(part)
-            #Convert message to a string
-            text = message.as_string()
-    
-            try:
-                #Send email
-                context=ssl.create_default_context()
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-                    server.login(self.email, self.password)
-                    server.sendmail(self.email, destEmail, text)
-                return True
-            except:
-                print("ERROR SENDING EMAIL")
-                return False
+            imagePath = sorted((Path('Images') / folderKey).iterdir(), key = os.path.getmtime)
         except:
-            print("ERROR ENCODING EMAIL")
+            print("Invalid Key")
             return False
+        #images = imagePath.glob('*.*')
+        images = [str(i) for i in imagePath]
+        images = list(images)
+        print(images)
+
+        # Create a multipart message and set headers
+        message = MIMEMultipart()
+        message["From"] = self.email
+        message["To"] = destEmail
+        message["Subject"] = title
+        # Add body to email
+        message.attach(MIMEText(body, "plain"))
+
+        # Attach files
+        for i in images:
+            # Open file in binary mode
+            with open(i, "rb") as attachment:
+                # Add file as application/octet-stream
+                # Email client can usually download this automatically as attachment
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment.read())
+
+            # Encode file in ASCII characters to send by email    
+            encoders.encode_base64(part)
+
+            # Add header as key/value pair to attachment part
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename= {i.split('/')[-1]}",
+            )
+
+            # Add attachment to message and convert message to string
+            message.attach(part)
+        #Convert message to a string
+        text = message.as_string()
+
+        #try:
+        #Send email
+        context=ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(self.email, self.password)
+            server.sendmail(self.email, destEmail, text)
+        return True
+        #except:
+        #    print("ERROR SENDING EMAIL")
+        #    return False
+       # except:
+       #     print("ERROR ENCODING EMAIL")
+       #     return False
 
 class DataRetriever:
     """Checks if there are changes to a given google sheet and gets data from a given google sheet
@@ -104,7 +106,11 @@ class DataRetriever:
         downloadUrl = re.sub(pattern, downloadUrl, sheetsUrl)
         #Store csv download link
         self.csvUrl = downloadUrl
-        self.currentData = pd.read_csv(self.csvUrl)
+        try:
+            self.currentData = pd.read_csv(self.csvUrl)
+        except:
+            self.currentData = None
+            print("Spreadsheet Empty (Init)")
 
     def checkChanges(self):
         """Checks to see if any changes have been made to the data retriever website
@@ -112,7 +118,12 @@ class DataRetriever:
             Returns: bool (True if different, False otherwise)
         """
         #Get frame and compare
-        df2 = pd.read_csv(self.csvUrl)
+        try:
+            df2 = pd.read_csv(self.csvUrl)
+        except:
+            df2 = None
+            print("Spreadsheet Empty (Compare)")
+            return False
         #If no change
         if(self.currentData.equals(df2)):
             return False
@@ -130,9 +141,15 @@ class DataRetriever:
         """
         email = []
         folderId = []
-        for i in range(num):
-            entry = self.currentData.iloc[-(i+1)]
-            entry = entry.values.tolist()
-            email.append(entry[1])
-            folderId.append(entry[2].upper())
-        return email, folderId
+        try:
+            for i in range(num):
+                entry = self.currentData.iloc[-(i+1)]
+                entry = entry.values.tolist()
+                email.append(entry[1])
+                folderId.append(entry[2].upper())
+            return email, folderId
+        except:
+            print("Sheet Emptied")
+            email.append(" ")
+            folderId.append(" ")
+            return email, folderId

@@ -45,7 +45,7 @@ class VideoPlayer:
         #Start picam in video mode
         self.picam2.configure(self.videoConfig)
         self.picam2.start()
-    
+
     def stopPlayer(self):
         self.picam2.stop_preview()
         self.picam2.stop()
@@ -58,7 +58,7 @@ class VideoPlayer:
         self.picam2.switch_mode_and_capture_file(self.photoConfig, str(self._path / folderKey / imageName))
         #switch back to video
         self.picam2.switch_mode(self.videoConfig)
-        
+
     def startCountdown(self):
         """Countdown from 3 to 1 inclusive, number printed in center of window"""
         #Display 3 overlay
@@ -74,13 +74,13 @@ class VideoPlayer:
         #time.sleep(1)
         #Clear overlay
         self.showOverlay(None)
-    
+
     def showStartMenu(self):
         self.showOverlay("startupscreenfilled")
-        
+
     def showContinueScreen(self):
         self.showOverlay("takeendoverlay")
-        
+
     def showQRScreen(self, key, qrLink):
         font = cv2.FONT_HERSHEY_SIMPLEX
         text = "Key: " + key
@@ -112,7 +112,7 @@ class VideoPlayer:
         overlay[int(startCoord[0]):int(endCoord[0]), int(startCoord[1]):int(endCoord[1]), :] = qrCode
         #Show overlay
         self.showOverlay(overlay)
-        
+
     def showOverlay(self, overlay):
         #If None; clear overlay
         if overlay is None:
@@ -125,14 +125,13 @@ class VideoPlayer:
         except:
             #If image; display image
             self.picam2.set_overlay(cv2.cvtColor(overlay, cv2.COLOR_BGRA2RGBA))
-        
 
 class GPIOControl:
     def __init__(self, inputs, outputs):
         self.btn1 = Button(inputs[0], pull_up=False, bounce_time = 0.05)
         self.btn2 = Button(inputs[1], pull_up=False, bounce_time = 0.05)
         self.led = LED(outputs)
-    
+
     def addEvent(self, targetInput, callbackFunction):
         targetInput.when_pressed = callbackFunction
 
@@ -140,7 +139,7 @@ class GPIOControl:
         outputPin.on()
         time.sleep(length)
         outputPin.off()
-        
+
     def close(self):
         self.btn1.close()
         self.btn2.close()
@@ -166,14 +165,14 @@ class KeyGenerator:
         self.__updateFile(updatedList)
         self.key = self.__decToKey(keyCode)
         return self.key
-        
+
     def addKey(self, key):
         #Open file in append mode
         keyFile = open(self.filename, "a")
         #Append decimal representation of key to file
         keyFile.write(str(self.__keyToDec(str(key))) + "\n")
         keyFile.close()
-    
+
     def __getKeyCode(self):
         #Open file
         keyFile = open(self.filename, "r")
@@ -195,7 +194,7 @@ class KeyGenerator:
         keyCode = numpy.random.choice(keylist)
         updatedList = numpy.delete(keylist, numpy.where(keylist==keyCode))
         return int(keyCode), updatedList
-            
+
     def __updateFile(self, keyArr):
         #Clear keyFile
         keyFile = open(self.filename, "w")
@@ -215,7 +214,7 @@ class KeyGenerator:
             keyArr = list(range(0,self.base**self.keyLen))
             self.__updateFile(keyArr)
             print("Creating new keyfile")
-    
+
     def __decToKey(self, num):
         """Convert decimal number to a key"""
         charNum = 0
@@ -237,13 +236,12 @@ class KeyGenerator:
             #convert shifted ascii to base 26 counting
             keyValue += num*(self.base**i)
         return keyValue
-            
-        
+
 class StorageManager():
 
     def __init__(self, managerPath):
         self.path = managerPath
-        
+
     def CheckStorage(self, maxItems):
         #Get number of items
         items = os.listdir(self.path)

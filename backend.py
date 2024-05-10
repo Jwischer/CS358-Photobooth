@@ -2,17 +2,22 @@
 
 import time
 from BackendPackage import MailController, DataRetriever
+import configparser
+
+#Parse config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 #Sender Email Address
-EMAIL_ADDRESS = "photoboothreceiver@gmail.com"
+EMAIL_ADDRESS = config['EMAIL']['EmailAddress']
 #Sender Address Password
-EMAIL_PASSWORD = ""
+EMAIL_PASSWORD = config['EMAIL']['EmailPassword']
 #Title of email
-EMAIL_TITLE = 'Photobooth Pictures'
+EMAIL_TITLE = config['EMAIL']['EmailTitle']
 #Body of email
-EMAIL_BODY = 'This is an email from the photobooth.\nYour pictures are attached below!'
+EMAIL_BODY = config['EMAIL']['EmailBody']
 #Url to google sheet linked with the form
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1YysUI-OJT6XPO9qqtwMygYJGwWc4ohH2NQ8aljmx9BI/edit?resourcekey#gid=1267535186"
+SHEET_URL = config['URLS']['SheetUrl']
 
 #Define a GmailController
 mailController = MailController(EMAIL_ADDRESS, EMAIL_PASSWORD)
