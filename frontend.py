@@ -35,7 +35,7 @@ for i in range(len(vidResolution)):
     vidResolution[i] = int(vidResolution[i])
 
 #Resolution of pictures
-camResolution = config['PICAMERA']['VideoResolution'].split(',')
+camResolution = config['PICAMERA']['CameraResolution'].split(',')
 for i in range(len(camResolution)):
     camResolution[i] = camResolution[i].strip()
     camResolution[i] = int(camResolution[i])
