@@ -27,12 +27,6 @@ class VideoPlayer:
         self.vidSizeWIDTH, self.vidSizeHEIGHT = vidSize
         self.picam2 = Picamera2()
         #Initialize qr code settings
-        self.qr = qrcode.QRCode(
-            version = None,
-            error_correction = qrcode.constants.ERROR_CORRECT_L,
-            box_size = 10,
-            border = 4,
-        )
         #Set camera config
         self.videoConfig = self.picam2.create_preview_configuration(main={"size": (self.vidWIDTH, self.vidHEIGHT)}, display="main", buffer_count = 3)
         #Set up image capture configuration
@@ -87,6 +81,13 @@ class VideoPlayer:
         scale = 4
         thickness = 3
         spacing = 50
+        #Set QR settings
+        qr = qrcode.QRCode(
+            version = None,
+            error_correction = qrcode.constants.ERROR_CORRECT_L,
+            box_size = 10,
+            border = 4,
+        )
         #Load overlay image
         overlay = cv2.imread("Overlays/QRCodeOverlay.png", cv2.IMREAD_UNCHANGED)
         #Add key text to overlay image
@@ -96,9 +97,9 @@ class VideoPlayer:
         cv2.putText(overlay, text, coords, font, scale, (0,48,92,255), thickness+4, cv2.LINE_AA)
         cv2.putText(overlay, text, coords, font, scale, (10,184,245,255), thickness, cv2.LINE_AA)
         #Set qr code data
-        self.qr.add_data(qrLink)
+        qr.add_data(qrLink)
         #Generate qr code (BGR color values)
-        qrCode = self.qr.make_image(fill_color = (0, 48, 92), back_color = (214 , 217, 218))
+        qrCode = qr.make_image(fill_color = (0, 48, 92), back_color = (214 , 217, 218))
         #Convert to numpy array using RGBA
         qrCode = numpy.array(qrCode.convert("RGBA"))
         #Bottom half of overlay can be used for qr code
